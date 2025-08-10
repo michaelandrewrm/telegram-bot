@@ -1,0 +1,38 @@
+# Bot Configuration
+bot:
+  name: "Notification Bot"
+  description: "Automated notification system"
+  webhook_url: null  # Set if using webhooks
+  polling_interval: 1  # seconds
+
+# Notifications
+notifications:
+  default_parse_mode: "Markdown"  # HTML, Markdown, or null
+  retry_attempts: 3
+  retry_delay: 1  # seconds
+  max_message_length: 4096
+
+# Scheduling
+scheduler:
+  timezone: "UTC"
+  max_workers: 5
+
+# API Server
+api:
+  enabled: true
+  title: "Telegram Bot API"
+  version: "1.0.0"
+  docs_url: "/docs"
+
+# Security
+security:
+  require_webhook_auth: true
+  allowed_users: []  # List of allowed user IDs, empty = allow all
+  rate_limit: 10  # requests per minute per user
+
+# Features
+features:
+  enable_subscriptions: true
+  enable_file_uploads: true
+  enable_scheduling: true
+  enable_monitoring: true
