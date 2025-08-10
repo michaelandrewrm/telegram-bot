@@ -106,15 +106,21 @@ class TelegramBot:
             # Start services
             await self._start_services()
             
-            # Start polling
+            # Start polling with the correct async method
             logger.info("Starting bot polling")
-            await self.application.run_polling(
-                poll_interval=config.polling_interval,
-                timeout=10,
-                bootstrap_retries=3,
-                drop_pending_updates=True
-            )
-            
+            async with self.application:
+                await self.application.start()
+                await self.application.updater.start_polling(
+                    poll_interval=config.polling_interval,
+                    timeout=10,
+                    bootstrap_retries=3,
+                    drop_pending_updates=True
+                )
+                
+                # Keep running until stopped
+                while self.is_running:
+                    await asyncio.sleep(1)
+                    
         except Exception as e:
             logger.error("Error starting bot polling", error=str(e))
             raise
@@ -185,10 +191,7 @@ class TelegramBot:
         try:
             self.is_running = False
             
-            if self.application:
-                await self.application.stop()
-                await self.application.shutdown()
-            
+            # Stop services first
             await self._stop_services()
             
             logger.info("Bot stopped")
@@ -213,7 +216,10 @@ async def main():
     except Exception as e:
         logger.error("Bot crashed", error=str(e))
     finally:
-        await bot.stop()
+        try:
+            await bot.stop()
+        except Exception as stop_error:
+            logger.error("Error during bot cleanup", error=str(stop_error))
 
 
 if __name__ == "__main__":

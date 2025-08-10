@@ -114,9 +114,7 @@ nano .env
 ```
 
 5. **Get your Bot Token:**
-   - Message [@BotFather](https://t.me/BotFather) on Telegram
-   - Create a new bot with `/newbot`
-   - Copy the token to your `.env` file
+
 
 6. **Get your Chat ID:**
    - Message your bot
@@ -127,22 +125,19 @@ nano .env
 
 ### Step 1: Get Your Bot Token
 
-1. **Message [@BotFather](https://t.me/BotFather) on Telegram**
-2. **Create a new bot:**
-   ```
-   /newbot
-   ```
-3. **Follow the prompts to name your bot**
+   - Message [@BotFather](https://t.me/BotFather) on Telegram
+   - Create a new bot with `/newbot`
+   - Copy the token to your `.env` file
+   - Follow the prompts to name your bot
+   - Copy the bot token
+
 4. **Copy the bot token** (looks like: `123456789:ABCDEF...`)
 
 ### Step 2: Get Your Chat ID
 
-1. **Message your new bot** (send any message)
-2. **Visit this URL** (replace `YOUR_BOT_TOKEN`):
-   ```
-   https://api.telegram.org/botYOUR_BOT_TOKEN/getUpdates
-   ```
-3. **Find your chat ID** in the response (looks like: `"id": 123456789`)
+   - Message your bot on Telegram
+   - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+   - Find your chat ID in the response (looks like: `"id": 123456789`)
 
 ### Step 3: Configure Your Bot
 
@@ -182,12 +177,11 @@ async def main():
     
     # Send with formatting
     message = """
-🚀 *Deployment Complete*
-
-**Status:** ✅ Success
-**Time:** 2 minutes
-**Version:** v1.0.0
-"""
+      🚀 *Deployment Complete*
+        **Status:** ✅ Success
+        **Time:** 2 minutes
+        **Version:** v1.0.0
+    """
     await send_notification(message, parse_mode="Markdown")
 
 # Run it
