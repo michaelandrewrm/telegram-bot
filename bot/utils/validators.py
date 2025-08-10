@@ -1,7 +1,7 @@
 """Validation utilities for the Telegram bot."""
 
 import re
-from typing import Union, Optional
+from typing import Union, Optional, Tuple
 
 
 def validate_chat_id(chat_id: Union[str, int]) -> bool:
@@ -28,7 +28,7 @@ def validate_chat_id(chat_id: Union[str, int]) -> bool:
     return False
 
 
-def validate_message(message: str, max_length: int = 4096) -> tuple[bool, Optional[str]]:
+def validate_message(message: str, max_length: int = 4096) -> Tuple[bool, Optional[str]]:
     """Validate message content.
     
     Args:
@@ -50,8 +50,8 @@ def validate_message(message: str, max_length: int = 4096) -> tuple[bool, Option
     return True, None
 
 
-def validate_file_path(file_path: str) -> tuple[bool, Optional[str]]:
-    """Validate file path.
+def validate_file_path(file_path: str) -> Tuple[bool, Optional[str]]:
+    """Validate file path for security.
     
     Args:
         file_path: File path to validate
@@ -65,17 +65,63 @@ def validate_file_path(file_path: str) -> tuple[bool, Optional[str]]:
     if not file_path.strip():
         return False, "File path cannot be empty"
     
-    # Check for potentially dangerous paths
-    dangerous_patterns = ['../', '~/', '/etc/', '/root/', '/sys/', '/proc/']
-    for pattern in dangerous_patterns:
-        if pattern in file_path:
-            return False, f"Potentially dangerous file path: {file_path}"
+    # Resolve path to check for traversal attempts
+    import os
+    try:
+        resolved_path = os.path.abspath(file_path)
+        
+        # Check for potentially dangerous paths
+        dangerous_paths = ['/etc/', '/root/', '/sys/', '/proc/', '/dev/', '/var/log/']
+        for dangerous_path in dangerous_paths:
+            if resolved_path.startswith(dangerous_path):
+                return False, f"Access to system path not allowed: {resolved_path}"
+        
+        # Check for common traversal patterns
+        if '..' in file_path or '~' in file_path:
+            return False, "Path traversal patterns not allowed"
+        
+        # Additional check: ensure path doesn't escape intended directory
+        # This should be customized based on your application's allowed directories
+        
+        return True, None
+        
+    except (OSError, ValueError) as e:
+        return False, f"Invalid file path: {str(e)}"
+
+
+def validate_webhook_signature(payload: bytes, signature: str, secret: str) -> bool:
+    """Validate webhook signature using HMAC.
     
-    return True, None
+    Args:
+        payload: Raw request payload
+        signature: Provided signature (e.g., from X-Hub-Signature-256 header)
+        secret: Webhook secret
+        
+    Returns:
+        True if signature is valid, False otherwise
+    """
+    import hmac
+    import hashlib
+    
+    if not secret or not signature:
+        return False
+    
+    # Expected signature format: "sha256=<hash>"
+    if not signature.startswith('sha256='):
+        return False
+    
+    expected_signature = 'sha256=' + hmac.new(
+        secret.encode('utf-8'),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    # Use constant time comparison
+    return hmac.compare_digest(signature, expected_signature)
 
 
 def validate_webhook_token(token: str, expected_token: str) -> bool:
-    """Validate webhook token.
+    """Validate webhook token using constant-time comparison.
     
     Args:
         token: Token to validate
@@ -84,16 +130,16 @@ def validate_webhook_token(token: str, expected_token: str) -> bool:
     Returns:
         True if valid, False otherwise
     """
+    import hmac
+    
     if not isinstance(token, str) or not isinstance(expected_token, str):
         return False
     
     if not token or not expected_token:
         return False
     
-    # Use constant time comparison to prevent timing attacks
-    return len(token) == len(expected_token) and sum(
-        ord(a) ^ ord(b) for a, b in zip(token, expected_token)
-    ) == 0
+    # Use hmac.compare_digest for constant time comparison to prevent timing attacks
+    return hmac.compare_digest(token, expected_token)
 
 
 def validate_parse_mode(parse_mode: str) -> bool:

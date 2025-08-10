@@ -45,7 +45,8 @@ class TestValidators:
         assert validate_chat_id(123456789) == True
         assert validate_chat_id("123456789") == True
         assert validate_chat_id("-123456789") == True
-        assert validate_chat_id("@username") == False  # Too short
+        assert validate_chat_id("@user") == False  # Too short (only 4 chars)
+        assert validate_chat_id("@username") == True  # Valid length (8 chars)
         assert validate_chat_id("@valid_username") == True
         
         # Invalid chat IDs

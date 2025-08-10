@@ -4,7 +4,8 @@ import asyncio
 import aiofiles
 from typing import Optional, List, Union, BinaryIO
 from pathlib import Path
-from telegram import Bot, ParseMode
+from telegram import Bot
+from telegram.constants import ParseMode
 from telegram.error import TelegramError, RetryAfter, NetworkError
 import structlog
 from ..config import config
@@ -72,6 +73,29 @@ class NotificationService:
         
         return await self._execute_with_retry(_send, chat_id, "text")
     
+    async def _prepare_file_data(
+        self, 
+        file_input: Union[str, Path, BinaryIO]
+    ) -> Union[BinaryIO, str, bytes]:
+        """Prepare file data for sending.
+        
+        Args:
+            file_input: File path, URL, or file object
+            
+        Returns:
+            Prepared file data
+        """
+        if isinstance(file_input, (str, Path)):
+            file_path = Path(file_input)
+            if file_path.exists():
+                async with aiofiles.open(file_path, 'rb') as f:
+                    return await f.read()
+            else:
+                # Assume it's a URL
+                return str(file_input)
+        else:
+            return file_input
+    
     async def send_photo(
         self,
         chat_id: Union[str, int],
@@ -93,31 +117,13 @@ class NotificationService:
         parse_mode = parse_mode or config.default_parse_mode
         
         async def _send():
-            if isinstance(photo, (str, Path)):
-                if Path(photo).exists():
-                    async with aiofiles.open(photo, 'rb') as f:
-                        photo_data = await f.read()
-                    await self.bot.send_photo(
-                        chat_id=chat_id,
-                        photo=photo_data,
-                        caption=caption,
-                        parse_mode=parse_mode
-                    )
-                else:
-                    # Assume it's a URL
-                    await self.bot.send_photo(
-                        chat_id=chat_id,
-                        photo=str(photo),
-                        caption=caption,
-                        parse_mode=parse_mode
-                    )
-            else:
-                await self.bot.send_photo(
-                    chat_id=chat_id,
-                    photo=photo,
-                    caption=caption,
-                    parse_mode=parse_mode
-                )
+            photo_data = await self._prepare_file_data(photo)
+            await self.bot.send_photo(
+                chat_id=chat_id,
+                photo=photo_data,
+                caption=caption,
+                parse_mode=parse_mode
+            )
         
         return await self._execute_with_retry(_send, chat_id, "photo")
     
@@ -144,34 +150,14 @@ class NotificationService:
         parse_mode = parse_mode or config.default_parse_mode
         
         async def _send():
-            if isinstance(document, (str, Path)):
-                if Path(document).exists():
-                    async with aiofiles.open(document, 'rb') as f:
-                        document_data = await f.read()
-                    await self.bot.send_document(
-                        chat_id=chat_id,
-                        document=document_data,
-                        filename=filename or Path(document).name,
-                        caption=caption,
-                        parse_mode=parse_mode
-                    )
-                else:
-                    # Assume it's a URL
-                    await self.bot.send_document(
-                        chat_id=chat_id,
-                        document=str(document),
-                        filename=filename,
-                        caption=caption,
-                        parse_mode=parse_mode
-                    )
-            else:
-                await self.bot.send_document(
-                    chat_id=chat_id,
-                    document=document,
-                    filename=filename,
-                    caption=caption,
-                    parse_mode=parse_mode
-                )
+            document_data = await self._prepare_file_data(document)
+            await self.bot.send_document(
+                chat_id=chat_id,
+                document=document_data,
+                filename=filename or (Path(document).name if isinstance(document, (str, Path)) else None),
+                caption=caption,
+                parse_mode=parse_mode
+            )
         
         return await self._execute_with_retry(_send, chat_id, "document")
     

@@ -41,19 +41,47 @@ def cli(ctx, config_file, env_file, log_level):
 @click.option('--caption', help='Caption for file')
 def send(message, chat_id, chat_ids, parse_mode, file, caption):
     """Send a notification message."""
+    # Validate inputs
+    if not message.strip():
+        click.echo("Error: Message cannot be empty", err=True)
+        return
+    
+    if parse_mode and parse_mode not in ['Markdown', 'HTML', 'MarkdownV2']:
+        click.echo(f"Error: Invalid parse mode '{parse_mode}'. Use Markdown, HTML, or MarkdownV2", err=True)
+        return
+    
+    if chat_id and chat_ids:
+        click.echo("Error: Cannot specify both --chat-id and --chat-ids", err=True)
+        return
+    
     async def _send():
         try:
+            from .utils.validators import validate_chat_id
+            
             if file:
                 # Send file
                 from .services.notification import notification_service
                 
-                target_chat_id = chat_id or config.default_chat_ids[0] if config.default_chat_ids else None
-                
-                if not target_chat_id:
-                    click.echo("Error: No chat ID specified and no defaults configured")
+                target_chat_id = None
+                if chat_id:
+                    if not validate_chat_id(chat_id):
+                        click.echo(f"Error: Invalid chat ID '{chat_id}'", err=True)
+                        return
+                    target_chat_id = chat_id
+                elif config.default_chat_ids:
+                    target_chat_id = config.default_chat_ids[0]
+                else:
+                    click.echo("Error: No chat ID specified and no defaults configured", err=True)
                     return
                 
                 file_path = Path(file)
+                file_size = file_path.stat().st_size
+                max_size = 50 * 1024 * 1024  # 50MB limit
+                
+                if file_size > max_size:
+                    click.echo(f"Error: File too large ({file_size / 1024 / 1024:.1f}MB > 50MB)", err=True)
+                    return
+                
                 if file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
                     success = await notification_service.send_photo(
                         chat_id=target_chat_id,
@@ -72,12 +100,16 @@ def send(message, chat_id, chat_ids, parse_mode, file, caption):
                 if success:
                     click.echo(f"File sent successfully to {target_chat_id}")
                 else:
-                    click.echo("Failed to send file")
+                    click.echo("Failed to send file", err=True)
             else:
                 # Send text message
                 if chat_ids:
-                    # Send to multiple chats
+                    # Validate all chat IDs first
                     chat_id_list = [cid.strip() for cid in chat_ids.split(',')]
+                    invalid_ids = [cid for cid in chat_id_list if not validate_chat_id(cid)]
+                    if invalid_ids:
+                        click.echo(f"Error: Invalid chat IDs: {', '.join(invalid_ids)}", err=True)
+                        return
                     from .services.notification import notification_service
                     results = await notification_service.send_to_multiple(
                         message, chat_id_list, parse_mode=parse_mode

@@ -2,7 +2,7 @@
 
 import os
 import yaml
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
 from dotenv import load_dotenv
 import structlog
@@ -25,15 +25,25 @@ class Config:
         
         # Load environment variables
         if self.env_path.exists():
-            load_dotenv(self.env_path)
-            logger.info("Loaded environment variables", path=str(self.env_path))
+            try:
+                load_dotenv(self.env_path)
+                logger.info("Loaded environment variables", path=str(self.env_path))
+            except (OSError, IOError) as e:
+                logger.error("Failed to load environment variables", path=str(self.env_path), error=str(e))
         
         # Load YAML configuration
-        self.yaml_config = {}
+        self.yaml_config: Dict[str, Any] = {}
         if self.config_path.exists():
-            with open(self.config_path, 'r') as f:
-                self.yaml_config = yaml.safe_load(f) or {}
-            logger.info("Loaded YAML configuration", path=str(self.config_path))
+            try:
+                with open(self.config_path, 'r', encoding='utf-8') as f:
+                    self.yaml_config = yaml.safe_load(f) or {}
+                logger.info("Loaded YAML configuration", path=str(self.config_path))
+            except yaml.YAMLError as e:
+                logger.error("Invalid YAML configuration", path=str(self.config_path), error=str(e))
+                self.yaml_config = {}
+            except (OSError, IOError) as e:
+                logger.error("Failed to read configuration file", path=str(self.config_path), error=str(e))
+                self.yaml_config = {}
     
     def get(self, key: str, default: Any = None, section: Optional[str] = None) -> Any:
         """Get configuration value.
