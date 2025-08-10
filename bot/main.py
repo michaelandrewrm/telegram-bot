@@ -54,7 +54,7 @@ class TelegramBot:
             # Add handlers
             self._add_handlers()
             
-            logger.info("Bot initialized", bot_token=config.telegram_bot_token[:10] + "...")
+            logger.info("Bot initialized successfully")
             
         except Exception as e:
             logger.error("Error initializing bot", error=str(e))

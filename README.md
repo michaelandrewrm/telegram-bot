@@ -2,6 +2,23 @@
 
 A comprehensive Python-based Telegram bot for automated notifications, monitoring alerts, and event-driven messaging. This bot can be integrated into applications, CI/CD pipelines, monitoring systems, and used for scheduled notifications.
 
+## 📋 Table of Contents
+
+- [🚀 Features](#-features)
+- [📋 Latest Updates](#-latest-updates)
+- [📦 Installation](#-installation)
+- [🚀 Getting Started](#-getting-started)
+- [⚙️ Configuration](#️-configuration)
+- [🔗 Integration Options](#-integration-options)
+- [📖 Usage Examples](#-usage-examples)
+- [🤖 Bot Commands](#-bot-commands)
+- [🔧 API Reference](#-api-reference)
+- [🔍 Monitoring and Alerts](#-monitoring-and-alerts)
+- [📊 Scheduling](#-scheduling)
+- [🛡️ Security](#️-security)
+- [🐛 Troubleshooting](#-troubleshooting)
+- [📝 Development](#-development)
+
 ## 🚀 Features
 
 ### Core Notification Features
@@ -40,7 +57,7 @@ A comprehensive Python-based Telegram bot for automated notifications, monitorin
 - ✅ Rate limiting and retry logic
 - ✅ Comprehensive error handling and logging
 
-## � Latest Updates
+## 📋 Latest Updates
 
 ### Python 3.13.5 & Security Improvements
 - ✅ Updated to Python 3.13.5 (latest stable release)
@@ -52,7 +69,7 @@ A comprehensive Python-based Telegram bot for automated notifications, monitorin
 - ✅ Enhanced development tools with pytest 8.0+ and coverage reporting
 - ✅ All 60 dependencies verified for security compliance
 
-## �📦 Installation
+## 📦 Installation
 
 ### Prerequisites
 
@@ -106,6 +123,120 @@ nano .env
    - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
    - Find your chat ID in the response
 
+## 🚀 Getting Started
+
+### Step 1: Get Your Bot Token
+
+1. **Message [@BotFather](https://t.me/BotFather) on Telegram**
+2. **Create a new bot:**
+   ```
+   /newbot
+   ```
+3. **Follow the prompts to name your bot**
+4. **Copy the bot token** (looks like: `123456789:ABCDEF...`)
+
+### Step 2: Get Your Chat ID
+
+1. **Message your new bot** (send any message)
+2. **Visit this URL** (replace `YOUR_BOT_TOKEN`):
+   ```
+   https://api.telegram.org/botYOUR_BOT_TOKEN/getUpdates
+   ```
+3. **Find your chat ID** in the response (looks like: `"id": 123456789`)
+
+### Step 3: Configure Your Bot
+
+Edit the `.env` file with your values:
+
+```bash
+# Required - Replace with your actual values
+TELEGRAM_BOT_TOKEN=123456789:ABCDEF1234567890abcdef1234567890ABC
+DEFAULT_CHAT_IDS=123456789
+
+# Optional - You can leave these as defaults
+API_HOST=0.0.0.0
+API_PORT=8080
+LOG_LEVEL=INFO
+```
+
+### Step 4: Send Your First Notification
+
+Choose any method to send your first notification:
+
+#### Option A: Use the CLI (Quickest)
+```bash
+python -m bot.cli send "Hello from my Telegram bot! 🎉"
+```
+
+#### Option B: Use Python Code
+```python
+import asyncio
+from bot.services.notification import send_notification
+
+async def main():
+    # Send to default chats
+    await send_notification("Hello World! 🌍")
+    
+    # Send to specific chat
+    await send_notification("Private message", chat_id="123456789")
+    
+    # Send with formatting
+    message = """
+🚀 *Deployment Complete*
+
+**Status:** ✅ Success
+**Time:** 2 minutes
+**Version:** v1.0.0
+"""
+    await send_notification(message, parse_mode="Markdown")
+
+# Run it
+asyncio.run(main())
+```
+
+#### Option C: Start the Interactive Bot
+```bash
+# Start with polling (recommended for development)
+python -m bot.main
+
+# Or start the API server
+python -m bot.cli api --host 0.0.0.0 --port 8080
+```
+
+### Step 5: Test Your Setup
+
+```bash
+# Test bot connection
+python -c "
+import asyncio
+from bot.services.notification import notification_service
+print('Testing bot connection...')
+result = asyncio.run(notification_service.test_connection())
+print('✅ Connected!' if result else '❌ Connection failed')
+"
+
+# Send system information
+python -m bot.cli system
+
+# Send file
+python -m bot.cli send "Check this out!" --file ./image.jpg
+```
+
+### Common Troubleshooting
+
+1. **"Chat not found"** → Make sure you've messaged your bot first
+2. **"Unauthorized"** → Check your bot token is correct  
+3. **"Can't parse entities"** → Check your Markdown/HTML syntax
+4. **Import errors** → Make sure virtual environment is activated
+
+### Next Steps
+
+1. **Explore Advanced Features**: Check out the [Usage Examples](#-usage-examples) section
+2. **Set up the API**: Start the web server and visit `http://localhost:8080/docs`
+3. **Configure Monitoring**: Set CPU/memory thresholds in `.env`
+4. **Schedule Notifications**: Use the built-in scheduler for recurring messages
+5. **Integration Examples**: Check the `telegram_notifier/` package for external app integration
+
 ## ⚙️ Configuration
 
 ### Environment Variables (.env)
@@ -149,58 +280,195 @@ features:
   enable_monitoring: true
 ```
 
-## 🚀 Quick Start
+## 🔗 Integration Options
 
-### 1. Basic Usage
+Multiple ways to integrate Telegram notifications into your applications:
+
+### Option 1: Package Installation (Recommended)
+
+Install as a Python package for seamless integration:
+
+```bash
+# Install the telegram-notifier package
+cd /path/to/telegram-bot
+pip install .
+
+# Or install in development mode
+pip install -e .
+```
+
+**Simple Usage:**
+```python
+from telegram_notifier import TelegramNotifier, send_notification_sync
+
+# Async usage (recommended)
+notifier = TelegramNotifier(
+    bot_token="your_token",
+    default_chat_ids=["your_chat_id"]
+)
+await notifier.send("Hello from my app! 🚀")
+
+# Sync usage (for existing non-async code)
+send_notification_sync("Quick notification!")
+```
+
+**Environment Configuration:**
+```bash
+export TELEGRAM_BOT_TOKEN="your_token"
+export TELEGRAM_CHAT_IDS="chat1,chat2,chat3"
+```
+
+### Option 2: HTTP API Integration
+
+Use the REST API from any language or application:
+
+```bash
+# Start the API server
+python -m bot.cli api --port 8080
+
+# Send notification via HTTP
+curl -X POST http://localhost:8080/api/v1/notify \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer your_api_secret_key" \\
+  -d '{"message": "Hello from API!", "parse_mode": "Markdown"}'
+```
+
+**Python HTTP Client:**
+```python
+import requests
+
+def send_notification_http(message, chat_id=None):
+    response = requests.post(
+        "http://localhost:8080/api/v1/notify",
+        headers={
+            "Authorization": "Bearer your_api_secret_key",
+            "Content-Type": "application/json"
+        },
+        json={
+            "message": message,
+            "chat_id": chat_id,
+            "parse_mode": "Markdown"
+        }
+    )
+    return response.json()
+```
+
+### Option 3: Microservice Architecture
+
+Deploy as a separate service using Docker:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  telegram-bot:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - TELEGRAM_BOT_TOKEN=\${TELEGRAM_BOT_TOKEN}
+      - DEFAULT_CHAT_IDS=\${DEFAULT_CHAT_IDS}
+      
+  your-app:
+    build: ./your-app
+    depends_on:
+      - telegram-bot
+    environment:
+      - TELEGRAM_API_URL=http://telegram-bot:8080
+```
+
+### Option 4: Direct Code Integration
+
+Copy specific modules for lightweight integration:
 
 ```python
-from bot import send_notification
+# Minimal integration for simple use cases
+import os
+import asyncio
+from telegram import Bot
 
-# Simple notification
-await send_notification("Hello from your bot! 👋")
+class SimpleTelegramNotifier:
+    def __init__(self, bot_token: str, chat_id: str):
+        self.bot = Bot(token=bot_token)
+        self.chat_id = chat_id
+    
+    def send_sync(self, message: str) -> bool:
+        try:
+            asyncio.run(self.bot.send_message(
+                chat_id=self.chat_id, 
+                text=message
+            ))
+            return True
+        except Exception:
+            return False
 
-# Notification to specific chat
-await send_notification("Private message", chat_id="123456789")
-
-# Formatted notification
-message = """
-🚀 *Deployment Complete*
-
-**Version:** v2.1.0
-**Status:** ✅ Success
-**Duration:** 3m 45s
-"""
-await send_notification(message, parse_mode="Markdown")
+# Usage
+notifier = SimpleTelegramNotifier(
+    os.getenv("TELEGRAM_BOT_TOKEN"),
+    os.getenv("TELEGRAM_CHAT_ID")
+)
+notifier.send_sync("Simple notification!")
 ```
 
-### 2. Run the Bot
+### Framework-Specific Examples
 
-```bash
-# Start with polling (recommended for development)
-python -m bot.main
+**Django Integration:**
+```python
+# settings.py
+TELEGRAM_BOT_TOKEN = "your_token"
+TELEGRAM_CHAT_ID = "your_chat_id"
 
-# Or use the CLI
-python -m bot.cli run
+# utils/notifications.py
+from django.conf import settings
+from telegram_notifier import send_notification_sync
 
-# Start API server
-python -m bot.cli api --host 0.0.0.0 --port 8080
+def notify_admin(message: str):
+    send_notification_sync(
+        message,
+        bot_token=settings.TELEGRAM_BOT_TOKEN,
+        chat_id=settings.TELEGRAM_CHAT_ID
+    )
+
+# Usage in views
+notify_admin(f"New user registered: {user.email}")
 ```
 
-### 3. Send via CLI
+**Flask Integration:**
+```python
+from flask import Flask
+from telegram_notifier import TelegramNotifier
 
-```bash
-# Simple message
-python -m bot.cli send "Hello from CLI!"
+app = Flask(__name__)
+notifier = TelegramNotifier()
 
-# Message to specific chat
-python -m bot.cli send "Private message" --chat-id 123456789
-
-# Send file
-python -m bot.cli send "Check this out" --file ./image.jpg
-
-# System information
-python -m bot.cli system
+@app.errorhandler(500)
+async def handle_error(error):
+    await notifier.send(f"🚨 Flask Error: {str(error)}")
+    return "Internal Server Error", 500
 ```
+
+**FastAPI Integration:**
+```python
+from fastapi import FastAPI, BackgroundTasks
+from telegram_notifier import TelegramNotifier
+
+app = FastAPI()
+notifier = TelegramNotifier()
+
+@app.post("/orders")
+async def create_order(order_data: dict, background_tasks: BackgroundTasks):
+    # Process order...
+    background_tasks.add_task(
+        notifier.send,
+        f"💰 New order: \${order_data['amount']}"
+    )
+```
+
+**Detailed Examples:** For comprehensive framework integration examples, see the `examples/integrations/` directory which includes:
+- Django with middleware, management commands, and signals
+- Flask with error handlers and decorators
+- FastAPI with async support and WebSocket integration
+- Celery with task monitoring and progress notifications
 
 ## 📖 Usage Examples
 

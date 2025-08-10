@@ -13,15 +13,15 @@ logger = structlog.get_logger(__name__)
 class Config:
     """Configuration class that loads settings from .env and config.yaml files."""
     
-    def __init__(self, config_path: Optional[Path] = None, env_path: Optional[Path] = None):
+    def __init__(self, config_path: Optional[Union[str, Path]] = None, env_path: Optional[Union[str, Path]] = None):
         """Initialize configuration.
         
         Args:
             config_path: Path to config.yaml file
             env_path: Path to .env file
         """
-        self.config_path = config_path or Path("config.yaml")
-        self.env_path = env_path or Path(".env")
+        self.config_path = Path(config_path) if config_path else Path("config.yaml")
+        self.env_path = Path(env_path) if env_path else Path(".env")
         
         # Load environment variables
         if self.env_path.exists():
@@ -112,9 +112,9 @@ class Config:
         except (ValueError, TypeError):
             return default
     
-    def get_bool(self, key: str, default: bool = False) -> bool:
+    def get_bool(self, key: str, default: bool = False, section: Optional[str] = None) -> bool:
         """Get configuration value as boolean."""
-        value = self.get(key, default)
+        value = self.get(key, default, section)
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
@@ -159,6 +159,11 @@ class Config:
     def log_level(self) -> str:
         """Get log level."""
         return self.get("log_level", "INFO")
+    
+    @log_level.setter
+    def log_level(self, value: str):
+        """Set log level."""
+        os.environ["LOG_LEVEL"] = value
     
     @property
     def log_file(self) -> Optional[str]:

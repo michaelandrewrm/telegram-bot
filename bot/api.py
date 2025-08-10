@@ -3,17 +3,19 @@
 import asyncio
 import hmac
 import hashlib
+import structlog
+
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, Depends, Request, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
+
 from ..config import config
 from ..services.notification import notification_service
 from ..services.subscription import subscription_service
 from ..services.monitoring import monitoring_service
 from ..services.scheduler import scheduler_service
 from ..utils.validators import validate_chat_id, validate_message, validate_webhook_token
-import structlog
 
 logger = structlog.get_logger(__name__)
 

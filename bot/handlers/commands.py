@@ -1,13 +1,15 @@
 """Command handlers for the Telegram bot."""
 
 import datetime
+import structlog
+
 from telegram import Update
 from telegram.ext import ContextTypes
+
 from ..constants import MESSAGES, EMOJIS
 from ..services.subscription import SubscriptionService
 from ..services.notification import notification_service
 from ..utils.formatters import format_system_info
-import structlog
 
 logger = structlog.get_logger(__name__)
 

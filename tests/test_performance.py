@@ -29,7 +29,7 @@ class TestNotificationPerformance:
             
             # Use gather for concurrent sends
             tasks = [
-                notification_service.send_message(chat_id, message)
+                notification_service.send_notification(message, chat_id)
                 for chat_id in chat_ids
             ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -79,6 +79,7 @@ class TestSubscriptionPerformance:
     async def test_subscription_lookup_performance(self):
         """Test performance of subscription lookups."""
         subscription_service = SubscriptionService()
+        subscription_service._subscriptions = {}  # Clear existing subscriptions
         
         # Add many subscribers
         subscriber_count = 1000
@@ -86,13 +87,13 @@ class TestSubscriptionPerformance:
         
         # Add subscribers
         for i in range(subscriber_count):
-            await subscription_service.subscribe(f"user_{i}", topic)
+            await subscription_service.subscribe(i, 123456, "system")
         
         # Test lookup performance
         start_time = time.time()
         
         for _ in range(100):  # 100 lookups
-            subscribers = await subscription_service.get_subscribers(topic)
+            subscribers = await subscription_service.get_subscribers("system")
             assert len(subscribers) == subscriber_count
         
         end_time = time.time()
@@ -113,12 +114,12 @@ class TestSubscriptionPerformance:
         
         # Test subscribe/unsubscribe cycles
         for i in range(operation_count):
-            user_id = f"user_{i % 100}"  # Reuse users
+            user_id = i % 100  # Reuse users, use integers
             
-            await subscription_service.subscribe(user_id, topic)
+            await subscription_service.subscribe(user_id, 123456, "system")
             
             if i % 2 == 0:  # Unsubscribe every other
-                await subscription_service.unsubscribe(user_id, topic)
+                await subscription_service.unsubscribe(user_id, "system")
         
         end_time = time.time()
         duration = end_time - start_time
@@ -165,6 +166,7 @@ class TestMemoryUsage:
     def test_subscription_storage_efficiency(self):
         """Test subscription storage efficiency."""
         subscription_service = SubscriptionService()
+        subscription_service._subscriptions = {}  # Clear any existing subscriptions
         
         # Add many subscriptions
         user_count = 1000
@@ -211,7 +213,7 @@ class TestConcurrencyPerformance:
                 for i in range(task_count):
                     chat_id = f"user_{i % concurrent_users}"
                     message = f"Concurrent message {i}"
-                    task = notification_service.send_message(chat_id, message)
+                    task = notification_service.send_notification(message, chat_id)
                     tasks.append(task)
                 
                 return await asyncio.gather(*tasks, return_exceptions=True)
