@@ -276,7 +276,7 @@ class SchedulerService:
             job_info = {
                 'id': job.id,
                 'name': job.name,
-                'next_run_time': job.next_run_time,
+                'next_run_time': getattr(job, 'next_run_time', None),
                 'trigger': str(job.trigger)
             }
             

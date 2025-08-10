@@ -61,13 +61,16 @@ A comprehensive Python-based Telegram bot for automated notifications, monitorin
 
 ### Python 3.13.5 & Security Improvements
 - ✅ Updated to Python 3.13.5 (latest stable release)
-- ✅ All dependencies updated to latest secure versions
+- ✅ All dependencies updated to latest compatible versions with flexible constraints
 - ✅ Security vulnerabilities resolved:
   - FastAPI updated to 0.116.1 (from 0.104.1)
   - Requests updated to 2.32.4 (from 2.31.0)  
   - Starlette updated to 0.47.2 (from 0.27.0)
+  - Cryptography updated to 45.0.6 (from 41.0.8)
+  - Python-telegram-bot updated to 21.11.1 (from 20.7)
 - ✅ Enhanced development tools with pytest 8.0+ and coverage reporting
-- ✅ All 60 dependencies verified for security compliance
+- ✅ Package installation compatibility fixed for Python 3.13
+- ✅ All dependencies verified for security compliance and Python 3.13 compatibility
 
 ## 📦 Installation
 
