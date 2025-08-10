@@ -2,14 +2,19 @@
 
 import pytest
 import asyncio
+import sys
+import os
+
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
-
 from telegram import Update, User, Chat, Message
 from telegram.ext import ContextTypes
 
 from bot.handlers.commands import CommandHandlers, command_handlers
 from bot.constants import MESSAGES
+
+# Add the parent directory to the path to handle relative imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 
 class TestCommandHandlers:

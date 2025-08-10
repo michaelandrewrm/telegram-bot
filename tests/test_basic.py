@@ -1,13 +1,20 @@
 """Basic tests for the Telegram bot."""
 
 import pytest
+import sys
+import os
 import asyncio
+
 from unittest.mock import Mock, patch, AsyncMock
+
 from bot.config import Config
 from bot.services.notification import NotificationService
 from bot.services.subscription import SubscriptionService
 from bot.utils.validators import validate_chat_id, validate_message
 from bot.utils.formatters import format_message
+
+# Add the parent directory to the path to handle relative imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 
 class TestConfig:

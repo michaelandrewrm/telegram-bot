@@ -5,6 +5,7 @@ import sys
 import os
 import hmac
 import hashlib
+
 from unittest.mock import patch, MagicMock
 
 # Add the parent directory to the path to handle relative imports

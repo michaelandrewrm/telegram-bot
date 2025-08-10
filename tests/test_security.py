@@ -3,13 +3,19 @@
 import pytest
 import hmac
 import hashlib
+import sys
+import os
+
 from unittest.mock import Mock, patch
+
 from bot.utils.validators import (
     validate_webhook_signature,
     validate_webhook_token,
     validate_file_path
 )
 
+# Add the parent directory to the path to handle relative imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 class TestWebhookSecurity:
     """Test webhook security features."""

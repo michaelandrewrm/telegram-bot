@@ -4,18 +4,19 @@ import pytest
 import asyncio
 import tempfile
 import os
+import sys
+
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
-
-# Add the bot module to the path
-import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from bot.config import Config
 from bot.services.notification import NotificationService
 from bot.services.subscription import SubscriptionService
 from bot.services.monitoring import MonitoringService
 from bot.services.scheduler import SchedulerService
+
+# Add the bot module to the path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 
 class TestServiceIntegration:

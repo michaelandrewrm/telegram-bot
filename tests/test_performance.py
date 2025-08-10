@@ -3,11 +3,17 @@
 import pytest
 import asyncio
 import time
+import sys
+import os
+
 from unittest.mock import Mock, AsyncMock, patch
+
 from bot.services.notification import NotificationService
 from bot.services.subscription import SubscriptionService
 from bot.utils.formatters import format_message, format_system_info
 
+# Add the parent directory to the path to handle relative imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 class TestNotificationPerformance:
     """Test notification service performance."""
