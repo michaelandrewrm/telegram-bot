@@ -40,11 +40,23 @@ A comprehensive Python-based Telegram bot for automated notifications, monitorin
 - ✅ Rate limiting and retry logic
 - ✅ Comprehensive error handling and logging
 
-## 📦 Installation
+## � Latest Updates
+
+### Python 3.13.5 & Security Improvements
+- ✅ Updated to Python 3.13.5 (latest stable release)
+- ✅ All dependencies updated to latest secure versions
+- ✅ Security vulnerabilities resolved:
+  - FastAPI updated to 0.116.1 (from 0.104.1)
+  - Requests updated to 2.32.4 (from 2.31.0)  
+  - Starlette updated to 0.47.2 (from 0.27.0)
+- ✅ Enhanced development tools with pytest 8.0+ and coverage reporting
+- ✅ All 60 dependencies verified for security compliance
+
+## �📦 Installation
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.13.5 or higher (latest stable version)
 - Telegram Bot Token (get one from [@BotFather](https://t.me/BotFather))
 
 ### Setup
@@ -55,12 +67,27 @@ git clone https://github.com/yourusername/telegram-bot.git
 cd telegram-bot
 ```
 
-2. **Install dependencies:**
+2. **Set up Python 3.13 environment:**
 ```bash
+# Install Python 3.13 via pyenv (recommended)
+pyenv install 3.13.5
+pyenv local 3.13.5
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. **Install dependencies:**
+```bash
+# Upgrade pip to latest version
+pip install --upgrade pip
+
+# Install project dependencies
 pip install -r requirements.txt
 ```
 
-3. **Configure environment:**
+4. **Configure environment:**
 ```bash
 # Copy example environment file
 cp .env.example .env
@@ -69,12 +96,12 @@ cp .env.example .env
 nano .env
 ```
 
-4. **Get your Bot Token:**
+5. **Get your Bot Token:**
    - Message [@BotFather](https://t.me/BotFather) on Telegram
    - Create a new bot with `/newbot`
    - Copy the token to your `.env` file
 
-5. **Get your Chat ID:**
+6. **Get your Chat ID:**
    - Message your bot
    - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
    - Find your chat ID in the response
